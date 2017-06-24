@@ -1,0 +1,192 @@
+{% extends 'stargate/base.html' %}
+{% block mainbody %}
+            <!-- Blog Post Content Column -->
+            <div class="col-lg-8" id="to_search">
+
+                <!-- Blog Post -->
+
+                <!-- Title -->
+                <h1>{{ title }}</h1>
+                <label for="" id="art_id" hidden>{{ art_id }}</label>
+
+                <!-- Author -->
+                <p class="lead">
+                    by <a href="#">{{ author }}</a>
+                </p>
+                <p class="lead">
+                    分类: <a href="#">{{ labelname }}</a>
+                </p>
+
+                <hr>
+
+                <!-- Date/Time -->
+                <p><span class="glyphicon glyphicon-time"></span> Posted on {{ create_time }}</p>
+
+                <hr>
+
+                <!-- Preview Image -->
+                <img class="img-responsive" src="{{ img }}" alt="">
+
+                <hr>
+
+                <!-- Post Content -->
+                <!--<p class="lead">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ducimus, vero, obcaecati, aut, error quam sapiente nemo saepe quibusdam sit excepturi nam quia corporis eligendi eos magni recusandae laborum minus inventore?</p>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ut, tenetur natus doloremque laborum quos iste ipsum rerum obcaecati impedit odit illo dolorum ab tempora nihil dicta earum fugiat. Temporibus, voluptatibus.</p>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eos, doloribus, dolorem iusto blanditiis unde eius illum consequuntur neque dicta incidunt ullam ea hic porro optio ratione repellat perspiciatis. Enim, iure!</p>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Error, nostrum, aliquid, animi, ut quas placeat totam sunt tempora commodi nihil ullam alias modi dicta saepe minima ab quo voluptatem obcaecati?</p>-->
+                <!--<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Harum, dolor quis. Sunt, ut, explicabo, aliquam tenetur ratione tempore quidem voluptates cupiditate voluptas illo saepe quaerat numquam recusandae? Qui, necessitatibus, est!</p>-->
+                {% for c in content %}
+
+                    {{ c }}<br>
+                {% endfor %}
+
+
+                <hr>
+
+                <!-- Blog Comments -->
+
+                <!-- Comments Form -->
+                <div class="well">
+                    <h4>评论:</h4>
+                    <form role="form">
+                        <div class="form-group">
+                            <textarea class="form-control" rows="3" id="comment_content"></textarea>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="comment_subbmit">提交</button>
+                    </form>
+                </div>
+
+                <hr>
+
+                <!-- Posted Comments -->
+
+                <!-- Comment -->
+                <div id="comment">
+                    <!--<div class="media">-->
+                    <!--<a class="pull-left" href="#">-->
+                        <!--<img class="media-object" src="http://placehold.it/64x64" alt="">-->
+                    <!--</a>-->
+                    <!--<div class="media-body">-->
+                        <!--<h4 class="media-heading">Start Bootstrap-->
+                            <!--<small>August 25, 2014 at 9:30 PM</small>-->
+                        <!--</h4>-->
+                        <!--Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin commodo. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.-->
+                    <!--</div>-->
+                    <!--</div>-->
+                </div>
+                <div id="callBackPager" style="text-align: right"></div>
+            </div>
+                <!-- Comment -->
+                <!--<div class="media" id="comment">-->
+                    <!--<a class="pull-left" href="#">-->
+                        <!--<img class="media-object" src="http://placehold.it/64x64" alt="">-->
+                    <!--</a>-->
+                    <!--<div class="media-body">-->
+                        <!--<h4 class="media-heading">Start Bootstrap-->
+                            <!--<small>August 25, 2014 at 9:30 PM</small>-->
+                        <!--</h4>-->
+                        <!--Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin commodo. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.-->
+                        <!--&lt;!&ndash; Nested Comment &ndash;&gt;-->
+                        <!--<div class="media">-->
+                            <!--<a class="pull-left" href="#">-->
+                                <!--<img class="media-object" src="http://placehold.it/64x64" alt="">-->
+                            <!--</a>-->
+                            <!--<div class="media-body">-->
+                                <!--<h4 class="media-heading">Nested Start Bootstrap-->
+                                    <!--<small>August 25, 2014 at 9:30 PM</small>-->
+                                <!--</h4>-->
+                                <!--Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin commodo. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; End Nested Comment &ndash;&gt;-->
+                    <!--</div>-->
+                <!--</div>-->
+{% endblock %}
+
+{% block script %}
+    <!--<script src="/static/js/highlight.pack.js"></script>-->
+    <script src="/static/js/extendPagination.js"></script>
+
+    <script>
+        // 分页
+        var art_id = $('#art_id').html();
+        function callBackPagination() {
+
+            console.log(art_id);
+            $.get('/commentcount?art_id='+art_id,function(res) {
+                var data_count = Number(res);
+                var totalCount = data_count, showCount = 10,
+                        limit = 10;
+                createTable(1,limit, totalCount);
+                $('#callBackPager').extendPagination({
+                    totalCount: totalCount,
+                    showCount: showCount,
+                    limit: limit,
+                    callback: function (curr, limit, totalCount) {
+                        createTable(curr, limit, totalCount);
+                    }
+                });
+            });
+        }
+        function createTable(currPage, limit, total) {
+            var mainObj = $('#comment');
+            mainObj.empty();
+            get_comments(currPage);
+        }
+        $(callBackPagination());
+
+        function get_comments(page) {
+            $.getJSON('/comment?page='+page+'&art_id='+art_id, function (res) {
+                var html = '';
+                $.each(res, function (i, v) {
+                    html += '<div class="media"><a class="pull-left" href="#"><img style="width: 32px; height: 32px" class="media-object" src="';
+                    html += v.portrait;
+                    html += '" alt=""></a><div class="media-body"><h4 class="media-heading">';
+                    html += v.commentor;
+                    html += '<small>';
+                    html += v.create_time;
+                    html += '</small></h4>';
+                    html += v.content;
+                    html += '</div></div>';
+                });
+                $('#comment').html(html)
+            });
+        }
+
+        //提交评论
+        $('#comment_subbmit').click(function () {
+            var comment_content = $('#comment_content').val()
+            if (comment_content == null || comment_content == ''){
+                $('#comment_content').parent().addClass('has-error');
+                return;
+            }
+            var data = {};
+            data.art_id = $('#art_id').html();
+            data.content = $('#comment_content').val();
+            console.log(data);
+            $.ajax({
+                cahce: true,
+                type: 'POST',
+                url: '/comment',
+                data: JSON.stringify(data),
+                async: false,
+                error: function (request) {
+                    console.log(request);
+                    alert('评论失败: ' + request.statusText);
+//                        $('#del_article').modal('hide');
+                },
+                success: function (data) {
+                    get_comments(1);
+                    $('#comment_content').val('')
+                    callBackPagination()
+//                        $('#del_article').modal('hide');
+                }
+            })
+        });
+
+        $('#comment_content').focus(function () {
+            $('#comment_content').parent().removeClass('has-error');
+        })
+
+    </script>
+{% endblock %}

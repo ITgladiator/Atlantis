@@ -1,0 +1,218 @@
+{% extends 'sgc/base.html' %}
+
+
+                <!-- Page Heading -->
+{% block pageHeader %}
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            文章分类管理
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li>
+                                <i class="fa fa-dashboard"></i>  <a href="/admin">首页</a>
+                            </li>
+                            <li class="active">
+                                <i class="fa fa-table"></i> 分类管理
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+{% endblock %}
+                <!-- /.row -->
+{% block pageBody %}
+<!-- Modal -->
+                <!-- 添加标签 -->
+                <div class="modal fade" id="add_label" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">添加标签</h4>
+                      </div>
+
+                          <div class="modal-body">
+                            <form action="/sgc/label" method="post" id="label_form">
+                                <div class="form-group">
+                                    <label>名称</label>
+                                    <input class="form-control" id="labelname" name="labelname" data-bv-notempty>
+                                    <p class="help-block">如：散文.</p>
+                                </div>
+                            </form>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <button type="button" class="btn btn-primary" onclick="add_label()">保存</button>
+                          </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 删除标签 -->
+                <div class="modal fade" id="del_label" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel_del">添加标签</h4>
+                      </div>
+
+                          <div class="modal-body">
+                            <form action="/sgc/label" method="delete" id="label_form_del">
+                                <div class="form-group">
+                                    <h4 class="modal-title">删除分类？</h4>
+                                    <input type="text" id="label_del_id" name="labelid" hidden>
+                                </div>
+                            </form>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="del_label()" >确定</button>
+                          </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-12">
+                        <!--<h2>文章分类管理</h2>-->
+                        <div>
+                            <!--<a href="/sgc/articleeditor" class="btn btn-sm btn-default">添加分类</a>-->
+                            <button type="button" class="btn btn-sm btn-default" data-toggle="modal" data-target="#add_label">
+                                添加分类
+                            </button>
+                        </div>
+                        <br/>
+                        <div class="table-responsive" style="min-height:400px">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>类型</th>
+                                        <th>文章数量</th>
+                                        <th class="col-lg-3">管理</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mainContent">
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+{% endblock %}
+
+
+{% block pageScript %}
+
+    <script>
+//        function callBackPagination() {
+//            $.get('/sgc/articlecount',function(res) {
+//                var data_count = Number(res);
+//                var totalCount = data_count, showCount = 10,
+//                        limit = 10;
+//                createTable(1,limit, totalCount);
+//                $('#callBackPager').extendPagination({
+//                    totalCount: totalCount,
+//                    showCount: showCount,
+//                    limit: limit,
+//                    callback: function (curr, limit, totalCount) {
+//                        createTable(curr, limit, totalCount);
+//                    }
+//                });
+//            });
+//        }
+//        function createTable(currPage, limit, total) {
+//            var group_id = $('#show-select').val();
+//            var mainObj = $('#mainContent');
+//            mainObj.empty();
+//            get_host_info(currPage);
+//        }
+//        callBackPagination(0);
+
+        //渲染表格
+        function get_labels(){
+            var get_url = '/sgc/label';
+            $.getJSON(get_url, function(res){
+                var html = '';
+                $.each(res, function(index,value){
+                    html += '<tr><td>';
+                    html += value.label_name;
+                    html += '</td><td>';
+                    html += value.article_count;
+                    html += '</td><td><button class="btn btn-success btn-modify-label" labelid="';
+                    html += value.id;
+                    html += '">修改</button><button class="btn btn-default btn-delete-label" labelid="';
+                    html += value.id;
+                    html += '">删除</button></td></tr>';
+                });
+                $('#mainContent').html(html);
+            });
+        }
+        get_labels();
+
+        // 添加标签
+        function add_label() {
+            var labelname=$('#labelname').val();
+            if (labelname == null || labelname == ''){
+                $('#labelname').parent().addClass('has-error');
+            }
+            else{
+                $.ajax(
+                    {
+                        cache: true,
+                        type: "POST",
+                        url:'/sgc/label',
+                        data:$('#label_form').serialize(),// 你的formid
+                        async: false,
+                        error: function(request) {
+                            alert("添加失败!");
+                        },
+                        success: function(data) {
+//                          $("#commonLayout_appcreshi").parent().html(data);
+                            $('#labelname').val('');
+                            get_labels();
+                        }
+                    }
+                );
+            };
+        };
+        // 确认删除
+        $(document).on('click', '.btn-delete-label', function () {
+            var article_id = $(this).attr('labelid');
+            $('#label_del_id').val(article_id);
+            $('#del_label').modal('show');
+        });
+        // 删除标签
+        function del_label() {
+            var labelid = $(this).attr('labelid');
+            $.ajax(
+                {
+                    cahce: true,
+                    type: 'DELETE',
+                    url: '/sgc/label',
+                    data: $('#label_form_del').serialize(),
+                    async: false,
+                    error: function (request) {
+                        console.log(request);
+                        alert('删除失败: ' + request.statusText);
+                        $('#del_label').modal('hide');
+                    },
+                    success: function (data) {
+                        get_labels();
+                        $('#del_label').modal('hide');
+                    }
+                }
+            )
+        }
+
+    </script>
+{% endblock %}
+<!--</body>-->
+
+<!--</html>-->

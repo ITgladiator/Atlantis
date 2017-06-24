@@ -1,0 +1,108 @@
+{% extends 'stargate/base.html' %}
+
+{% block mainbody %}
+            <!-- Blog Entries Column -->
+            <div class="col-md-8" id="to_search">
+
+                <h1 class="page-header">
+                    Atlatins Blog
+                    <small></small>
+                </h1>
+
+                <!-- First Blog Post -->
+
+                <div id="article_show">
+
+                </div>
+                <!-- Pager -->
+                <ul class="pager">
+                    <li class="previous">
+                        <!--<a href="#">&larr; Older</a>-->
+                        <button id="older" page_present="1" page_count="1" class="btn btn-default btn-getpage" style="float: left; border: 1px solid #ddd; border-radius: 15px; color: #337ABA;" onclick="older_articles()">&larr; Older</button>
+                    </li>
+                    <li class="next">
+                        <!--<a href="#">Newer &rarr;</a>-->
+                        <button id="newer" page_present="1" page_count="1" class="btn btn-default btn-getpage" style="float: right; border: 1px solid #ddd; border-radius: 15px; color: #337ABA;" onclick="newer_articles()">Newer &rarr;</button>
+                    </li>
+                </ul>
+
+            </div>
+{% endblock %}
+
+            <!-- Blog Sidebar Widgets Column -->
+
+        <!-- /.row -->
+
+        <hr>
+
+{% block script %}
+    <script>
+        // 获取文章列表
+        function showarticles(url) {
+            $.getJSON(url, function (res) {
+                var html = '';
+                $.each(res, function (i, v) {
+                    html += '<h2><a href="/details?article_id=';
+                    html += v.id;
+                    html += '">';
+                    html += v.title;
+                    html += '</a></h2><p class="lead">by <a href="#">';
+                    html += v.author;
+                    html += '</a></p><p><span class="glyphicon glyphicon-time"></span> Posted on ';
+                    html += v.create_time;
+                    html += '</p><hr><img class="img-responsive" src="';
+                    html += v.img;
+                    html += '" alt=""><hr><p>';
+                    html += v.summary;
+                    html += '</p><a class="btn btn-primary" href="/details?article_id=';
+                    html += v.id;
+                    html += '">Read More <span class="glyphicon glyphicon-chevron-right"></span></a><hr>';
+                });
+                $('#article_show').html(html);
+            });
+        }
+        function get_articles(page) {
+            $('.btn-getpage').attr('page_present', page);
+            $.get('/art_count', function (res) {
+                $('.btn-getpage').attr('page_count', res)
+            });
+            var get_url = '/default?page='+page;
+            showarticles(get_url)
+
+        }
+        get_articles(1);
+
+        // 下一页
+        function newer_articles() {
+            var page_count = Number($('#newer').attr('page_count'));
+
+            console.log(page_count);
+            var newer_page = Number($('#newer').attr('page_present')) + 1;
+            console.log(newer_page)
+            if(newer_page>page_count){
+                alert('已经是最后一页了');
+                return
+            }
+            get_articles(newer_page)
+        }
+
+        // 上一页
+        function older_articles() {
+            var new_page = Number($('#older').attr('page_present')) - 1;
+            if(new_page<=0){
+                alert('已经是第一页了');
+                return
+            }
+            get_articles(new_page)
+        }
+        // 回到顶部
+        $(".btn-getpage").click(function () {
+            var speed=20;//滑动的速度
+            $('body,html').animate({ scrollTop: 0 }, speed);
+            return false;
+        });
+
+
+    </script>
+
+{% endblock %}

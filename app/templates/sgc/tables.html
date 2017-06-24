@@ -1,0 +1,277 @@
+{% extends 'sgc/base.html' %}
+                <!-- Page Heading -->
+{% block pageHeader %}
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">
+                            文章管理
+                        </h1>
+                        <ol class="breadcrumb">
+                            <li>
+                                <i class="fa fa-dashboard"></i>  <a href="/admin">首页</a>
+                            </li>
+                            <li class="active">
+                                <i class="fa fa-table"></i> 文章管理
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+{% endblock %}
+                <!-- /.row -->
+{% block pageBody %}
+                <!-- 文章预览 -->
+                <div class="modal fade" id="articel_view" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel">添加标签</h4>
+                      </div>
+
+                          <div class="modal-body">
+                            <div class="page-header">
+                                <h1 id="title"></h1>
+                            </div>
+                              <div class="col-sm-4">
+                                  <label class="control-label" id="label"></label>
+                              </div>
+                              <div class="col-sm-4">
+                                  <label class="control-label" id="author"></label>
+                              </div>
+
+                              <div class="col-sm-4">
+                                  <label class="control-label" id="create_time"></label>
+                              </div>
+                              <br>
+
+
+                            <div class="well">
+                                <p id="content"></p>
+                            </div>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                            <!--<button type="button" class="btn btn-primary" onclick="add_label()">保存</button>-->
+                          </div>
+
+                    </div>
+                  </div>
+                </div>
+
+
+                <!-- 删除文章 -->
+                <div class="modal fade" id="del_article" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title" id="myModalLabel_del">添加标签</h4>
+                      </div>
+
+                          <div class="modal-body">
+                            <form action="/sgc/article" method="delete" id="article_form_del">
+                                <div class="form-group">
+                                    <h4 class="modal-title">删除文章？</h4>
+                                    <input type="text" id="article_del_id" name="article_id" hidden>
+                                </div>
+                            </form>
+                          </div>
+
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="del_article()" >确定</button>
+                          </div>
+
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+
+                    <div class="col-lg-12">
+                        <!--<h2>文章管理</h2>-->
+                        <div>
+                            <a href="/sgc/articleeditor" class="btn btn-sm btn-default">添加文章</a>
+                        </div>
+                        <br/>
+                        <div class="table-responsive"  style="min-height:400px">
+                            <table class="table table-bordered table-hover table-striped">
+                                <thead>
+                                    <tr>
+                                        <th><input type="checkbox" id="select_all"></th>
+                                        <th>主题</th>
+                                        <th>分类</th>
+                                        <th>作者</th>
+                                        <th>创建时间</th>
+                                        <th class="col-lg-3">管理</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mainContent">
+                                </tbody>
+                            </table>
+                            <button class="btn btn-danger" id="delete_all">删除所有</button>
+                            <div id="callBackPager" style="text-align: right"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.row -->
+{% endblock %}
+
+
+{% block pageScript %}
+    <script src="/static/js/extendPagination.js"></script>
+    <script>
+        // 分页
+        function callBackPagination() {
+            $.get('/sgc/articlecount',function(res) {
+                var data_count = Number(res);
+                var totalCount = data_count, showCount = 10,
+                        limit = 10;
+                createTable(1,limit, totalCount);
+                $('#callBackPager').extendPagination({
+                    totalCount: totalCount,
+                    showCount: showCount,
+                    limit: limit,
+                    callback: function (curr, limit, totalCount) {
+                        createTable(curr, limit, totalCount);
+                    }
+                });
+            });
+        }
+        function createTable(currPage, limit, total) {
+            var mainObj = $('#mainContent');
+            mainObj.empty();
+            get_articles(currPage);
+        }
+        callBackPagination();
+
+        //渲染表格
+        function get_articles(page){
+            var get_url = '/sgc/article?page='+page;
+            $.getJSON(get_url, function(res){
+                var html = '';
+                $.each(res, function(index,value){
+                    html += '<tr><td><input type="checkbox" class="select_art" value="';
+                    html += value.id;
+                    html += '"></td><td>';
+                    html += value.title;
+                    html += '</td><td>';
+                    html += value.label;
+                    html += '</td><td>';
+                    html += value.author;
+                    html += '</td><td>';
+                    html += value.create_time;
+                    html += '</td><td><button class="btn btn-info btn-show-article" article_id="';
+                    html += value.id;
+                    html += '">预览</button><button class="btn btn-success btn-modify-article" article_id="';
+                    html += value.id;
+                    html += '">修改</button><button class="btn btn-default btn-delete-article" article_id="';
+                    html += value.id;
+                    html += '">删除</button></td></tr>';
+                });
+                $('#mainContent').html(html);
+            });
+        }
+
+
+        //预览文章
+        $(document).on('click', '.btn-show-article', function () {
+            var article_id = $(this).attr('article_id');
+            $.getJSON('/article?article_id='+article_id, function(res){
+                $.each(res, function(index,value){
+                    $('#title').html(value.title);
+                    $('#label').html(value.label);
+                    $('#author').html(value.author);
+                    $('#create_time').html(value.create_time);
+                    var html ='';
+                    var content = value.content.split('\n');
+                    $.each(content, function (i,v) {
+                        html += v;
+                        html += '</br>';
+                    });
+                    $('#content').html(html);
+                });
+            $('#articel_view').modal('show');
+            });
+        })
+
+
+        // 确认删除
+        $(document).on('click', '.btn-delete-article', function () {
+            var article_id = $(this).attr('article_id');
+            $('#article_del_id').val(article_id);
+            $('#del_article').modal('show');
+        });
+        // 删除文章
+        function del_article() {
+//            var article_id = $(this).attr('article_id');
+            $.ajax(
+                {
+                    cahce: true,
+                    type: 'DELETE',
+                    url: '/sgc/article',
+                    data: $('#article_form_del').serialize(),
+                    async: false,
+                    error: function (request) {
+                        console.log(request);
+                        alert('删除失败: ' + request.statusText);
+                        $('#del_article').modal('hide');
+                    },
+                    success: function (data) {
+                        callBackPagination();
+                        $('#del_article').modal('hide');
+                    }
+                }
+            )
+        }
+
+        $('#select_all').click(function () {
+//            console.log(this.checked);
+            $('.select_art').prop('checked', this.checked);
+
+            var $subBox = $('.select_art');
+            $subBox.click(function () {
+                $('#select_all').prop('checked', $subBox.length==$('.select_art:checked').length ? true:false)
+            });
+        });
+//        $('.select_art').each(function(){
+//            $(this).click(function(){
+//                $('#select_all').prop('checked',$('.select_art').length == $('.select_art').attr('checked',true).length ? true:false)
+//            })
+//        });
+
+
+        // 批量删除
+        $('#delete_all').click(function () {
+            var data = [];
+//            data = [];
+//            console.log($('.select_art'));
+            $('.select_art').each(function () {
+                if(this.checked){
+                    data.push($(this).val());
+                }
+            });
+            console.log(JSON.stringify(data))
+            $.ajax({
+                type: 'DELETE',
+                    url: '/sgc/multidelete',
+                    data: JSON.stringify(data),
+                    async: false,
+                    error: function (request) {
+//                        console.log(request);
+                        alert('删除失败: ' + request.statusText);
+//                        $('#del_article').modal('hide');
+                    },
+                    success: function (data) {
+                        get_articles(1);
+//                        $('#del_article').modal('hide');
+                    }
+            })
+        })
+
+    </script>
+{% endblock %}
+<!--</body>-->
+
+<!--</html>-->
